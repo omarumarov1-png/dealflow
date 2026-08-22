@@ -44,6 +44,16 @@
   --coral:          #E96A4F;
   --coral-wash:     rgba(233,106,79,0.12);
   --shadow:         rgba(0,0,0,0.45);
+  /* Category accents -- climate/care reuse fresh new hues, money/tech reuse
+     the existing amber/teal primaries (those two categories ARE the
+     page's core visual identity), commerce gets a soft violet. Structure
+     as information: the color says something real about the card, it's
+     not decoration. */
+  --cat-climate:      #6FBF73; --cat-climate-wash: rgba(111,191,115,0.12);
+  --cat-care:         #E96A4F; --cat-care-wash:    rgba(233,106,79,0.12);
+  --cat-money:        #E8A33D; --cat-money-wash:   rgba(232,163,61,0.12);
+  --cat-tech:         #4FBFA8; --cat-tech-wash:    rgba(79,191,168,0.12);
+  --cat-commerce:     #A78BFA; --cat-commerce-wash:rgba(167,139,250,0.14);
   --font-display:   'Fraunces Deal', Georgia, 'Iowan Old Style', serif;
   --font-body:       'Archivo Deal', -apple-system, 'Segoe UI', sans-serif;
   --font-mono:       'JBMono Deal', 'SF Mono', Menlo, monospace;
@@ -148,7 +158,8 @@ a{ color:var(--amber-bright); }
   position:relative; background:var(--ink-card); border:1px solid var(--hairline);
   border-radius:18px; padding:28px 26px 24px; margin-bottom:18px;
   opacity:0; transform:translateY(14px); animation:card-in 0.6s cubic-bezier(0.16,1,0.3,1) forwards;
-  transition:border-color 0.25s cubic-bezier(0.16,1,0.3,1), background 0.25s cubic-bezier(0.16,1,0.3,1);
+  transition:border-color 0.25s cubic-bezier(0.16,1,0.3,1), background 0.25s cubic-bezier(0.16,1,0.3,1),
+    transform 0.3s cubic-bezier(0.16,1,0.3,1), box-shadow 0.3s cubic-bezier(0.16,1,0.3,1);
   /* Cards keep growing forever in this feed -- once there are hundreds of
      them, laying out and painting the ones far off-screen on every scroll
      frame is what actually causes long-session jank, not the animation
@@ -158,7 +169,11 @@ a{ color:var(--amber-bright); }
   content-visibility:auto;
   contain-intrinsic-size:0 360px;
 }
-.card:hover{ border-color:var(--hairline-bright); background:var(--ink-card-hover); }
+.card:hover{
+  border-color:var(--hairline-bright); background:var(--ink-card-hover);
+  transform:translateY(-3px); box-shadow:0 16px 40px var(--shadow);
+}
+@media (prefers-reduced-motion: reduce){ .card:hover{ transform:none; } }
 @keyframes card-in{ to{ opacity:1; transform:translateY(0); } }
 @media (prefers-reduced-motion: reduce){
   .card{ animation:none; opacity:1; transform:none; }
@@ -255,6 +270,83 @@ a{ color:var(--amber-bright); }
 @keyframes spin-once{ from{ transform:rotate(0deg);} to{ transform:rotate(180deg);} }
 @media (prefers-reduced-motion: reduce){ .icon-btn.spin svg{ animation:none; } }
 
+/* ---------- language toggle ---------- */
+.lang-toggle{ display:flex; border:1px solid var(--hairline-bright); border-radius:9px; overflow:hidden; }
+.lang-btn{
+  font-family:var(--font-mono); font-size:11px; font-weight:500; letter-spacing:0.04em;
+  padding:8px 11px; border:none; background:transparent; color:var(--paper-faint); cursor:pointer;
+  transition:background 0.2s cubic-bezier(0.16,1,0.3,1), color 0.2s cubic-bezier(0.16,1,0.3,1);
+}
+.lang-btn:hover{ color:var(--paper); }
+.lang-btn.active{ background:var(--amber); color:#1C1204; }
+
+/* ---------- filter bar ---------- */
+.filter-bar{
+  display:flex; flex-wrap:wrap; gap:8px; align-items:center;
+  max-width:720px; margin:0 auto; padding:16px 20px; overflow:hidden;
+  max-height:200px; transition:max-height 0.35s cubic-bezier(0.16,1,0.3,1), padding 0.35s cubic-bezier(0.16,1,0.3,1), opacity 0.25s ease;
+  border-bottom:1px solid var(--hairline); opacity:1;
+}
+.filter-bar.hidden{ max-height:0; padding-top:0; padding-bottom:0; opacity:0; border-bottom-color:transparent; }
+@media (prefers-reduced-motion: reduce){ .filter-bar{ transition:none; } }
+.filter-chip{
+  font-family:var(--font-body); font-weight:600; font-size:12.5px; cursor:pointer;
+  padding:8px 14px; border-radius:99px; border:1.5px solid var(--hairline-bright);
+  color:var(--paper-dim); background:transparent; display:inline-flex; align-items:center; gap:6px;
+  transition:border-color 0.2s cubic-bezier(0.16,1,0.3,1), color 0.2s cubic-bezier(0.16,1,0.3,1), background 0.2s cubic-bezier(0.16,1,0.3,1);
+}
+.filter-chip .dot{ width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.filter-chip.active{ color:var(--paper); border-color:var(--chip-color, var(--hairline-bright)); background:var(--chip-wash, transparent); }
+.filter-chip:hover{ color:var(--paper); }
+
+/* ---------- point-and-translate glosses ---------- */
+.gloss{
+  cursor:pointer; border-bottom:1px dotted currentColor; position:relative;
+  text-underline-offset:2px;
+}
+.gloss.open{ color:var(--amber-bright); }
+.gloss.open::after{
+  content: attr(data-ru);
+  position:absolute; left:0; top:calc(100% + 7px); z-index:6;
+  background:var(--ink-raised); border:1px solid var(--hairline-bright); border-radius:9px;
+  padding:8px 12px; font-family:var(--font-body); font-weight:600; font-size:12.5px; color:var(--paper);
+  white-space:normal; max-width:260px; width:max-content; line-height:1.4;
+  box-shadow:0 10px 28px var(--shadow);
+  animation:gloss-in 0.18s cubic-bezier(0.16,1,0.3,1);
+}
+body.mode-ru .gloss.open::after{ content: attr(data-en); }
+@keyframes gloss-in{ from{ opacity:0; transform:translateY(-4px); } to{ opacity:1; transform:translateY(0); } }
+@media (prefers-reduced-motion: reduce){ .gloss.open::after{ animation:none; } }
+
+/* ---------- category-colored chips ---------- */
+.chip.v.cat-climate{ color:var(--cat-climate); border-color:rgba(111,191,115,0.35); background:var(--cat-climate-wash); }
+.chip.v.cat-care{ color:var(--cat-care); border-color:rgba(233,106,79,0.35); background:var(--cat-care-wash); }
+.chip.v.cat-money{ color:var(--cat-money); border-color:rgba(232,163,61,0.35); background:var(--cat-money-wash); }
+.chip.v.cat-tech{ color:var(--cat-tech); border-color:rgba(79,191,168,0.35); background:var(--cat-tech-wash); }
+.chip.v.cat-commerce{ color:var(--cat-commerce); border-color:rgba(167,139,250,0.4); background:var(--cat-commerce-wash); }
+
+/* ---------- back to top ---------- */
+.back-to-top{
+  position:fixed; right:20px; bottom:20px; z-index:20;
+  width:42px; height:42px; border-radius:50%; border:1px solid var(--hairline-bright);
+  background:var(--ink-raised); color:var(--paper-dim); display:flex; align-items:center; justify-content:center;
+  cursor:pointer; opacity:0; pointer-events:none; transform:translateY(8px);
+  transition:opacity 0.25s cubic-bezier(0.16,1,0.3,1), transform 0.25s cubic-bezier(0.16,1,0.3,1), border-color 0.2s ease, color 0.2s ease;
+  box-shadow:0 6px 20px var(--shadow);
+}
+.back-to-top.visible{ opacity:1; pointer-events:auto; transform:translateY(0); }
+.back-to-top:hover{ border-color:var(--amber); color:var(--amber-bright); }
+
+/* ---------- toast ---------- */
+.toast{
+  position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(12px); z-index:30;
+  background:var(--ink-raised); border:1px solid var(--hairline-bright); border-radius:99px;
+  padding:10px 18px; font-family:var(--font-mono); font-size:12px; color:var(--paper);
+  opacity:0; pointer-events:none; transition:opacity 0.25s ease, transform 0.25s cubic-bezier(0.16,1,0.3,1);
+  box-shadow:0 10px 28px var(--shadow);
+}
+.toast.visible{ opacity:1; transform:translateX(-50%) translateY(0); }
+
 .footer-note{
   max-width:720px; margin:24px auto 64px; padding:0 20px;
   font-family:var(--font-mono); font-size:11.5px; line-height:1.7; color:var(--paper-faint);
@@ -265,30 +357,54 @@ a{ color:var(--amber-bright); }
   .card{ padding:22px 18px 20px; border-radius:15px; }
   .card-name{ font-size:1.32rem; }
   .hero{ padding:52px 18px 40px; }
+  /* Five interactive controls (count, language, filter, share, shuffle)
+     don't fit a ~375-390px screen at full size -- narrow the padding/gaps
+     first, and if that's still not enough, drop the "generated" word and
+     keep just the live number, which is the part that actually matters
+     at a glance. */
+  .controls{ padding:11px 12px; gap:8px; }
+  .controls-right{ gap:6px; }
+  #generatedLabel{ display:none; }
+  .icon-btn{ width:32px; height:32px; }
+  .lang-btn{ padding:7px 8px; }
+}
+@media (max-width:360px){
+  .controls-brand{ font-size:0.9rem; }
 }
 </style>
 
 <div class="controls">
   <div class="controls-brand"><span class="mark">deal</span>flow<span style="color:var(--paper-faint)">.feed</span></div>
   <div class="controls-right">
-    <span><span class="controls-count" id="liveCount">0</span> generated</span>
+    <span><span class="controls-count" id="liveCount">0</span> <span class="word" id="generatedLabel">generated</span></span>
+    <div class="lang-toggle" id="langToggle" role="group" aria-label="Language">
+      <button class="lang-btn active" data-lang="en" type="button">EN</button>
+      <button class="lang-btn" data-lang="ru" type="button">RU</button>
+    </div>
+    <button class="icon-btn" id="filterToggleBtn" title="Filter by industry" aria-label="Filter by industry" aria-expanded="false">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </button>
+    <button class="icon-btn" id="shareBtn" title="Copy a link to this exact feed" aria-label="Copy a link to this exact feed">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M8.5 10.5l7-4M8.5 13.5l7 4M18 5a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0zM18 19a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0zM8.5 12a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
     <button class="icon-btn" id="shuffleBtn" title="Start a fresh universe of ideas" aria-label="Shuffle: start a fresh universe of ideas">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M4 4l6.5 6.5M15 15l6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
   </div>
 </div>
+<div class="filter-bar hidden" id="filterBar"></div>
 
 <section class="hero">
   <canvas id="heroCanvas"></canvas>
   <div class="hero-veil"></div>
   <div class="hero-content">
-    <span class="hero-eyebrow"><span class="dot"></span> Live idea feed — never runs dry</span>
-    <h1>Businesses that don't<br/>exist yet — <em>infinitely.</em></h1>
-    <p class="lede">Scroll and a new venture appears: a name, a pitch, a wedge. Every one machine-assembled from real startup mechanics, on the spot, forever.</p>
+    <span class="hero-eyebrow"><span class="dot"></span> <span id="heroEyebrow">Live idea feed — never runs dry</span></span>
+    <h1 id="heroH1">Businesses that don't<br/>exist yet — <em>infinitely.</em></h1>
+    <p class="lede" id="heroLede">Scroll and a new venture appears: a name, a pitch, a wedge. Every one machine-assembled from real startup mechanics, on the spot, forever.</p>
     <div class="hero-stats">
-      <div class="hero-stat"><div class="num" id="statVerticals">44</div><div class="lbl">Industries</div></div>
-      <div class="hero-stat"><div class="num" id="statModels">25</div><div class="lbl">Business models</div></div>
-      <div class="hero-stat"><div class="num" id="statCombos">1B+</div><div class="lbl">Possible pitches</div></div>
+      <div class="hero-stat"><div class="num" id="statVerticals">48</div><div class="lbl" id="statIndustriesLbl">Industries</div></div>
+      <div class="hero-stat"><div class="num" id="statModels">25</div><div class="lbl" id="statModelsLbl">Business models</div></div>
+      <div class="hero-stat"><div class="num" id="statCombos">1B+</div><div class="lbl" id="statPitchesLbl">Possible pitches</div></div>
     </div>
     <div class="hero-actions">
       <button class="btn btn-primary" id="startBtn">Start the feed</button>
@@ -296,7 +412,7 @@ a{ color:var(--amber-bright); }
     </div>
   </div>
   <div class="scroll-cue">
-    <span>Scroll</span>
+    <span id="scrollLabel">Scroll</span>
     <svg width="14" height="18" viewBox="0 0 14 18" fill="none"><path d="M1 1l6 6 6-6M7 0v16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
   </div>
 </section>
@@ -304,70 +420,211 @@ a{ color:var(--amber-bright); }
 <main class="feed-wrap">
   <div class="feed-rail"></div>
   <div id="feed"></div>
-  <div class="loader-row" id="loaderRow"><div class="loader-dots"><span></span><span></span><span></span></div> generating</div>
+  <div class="loader-row" id="loaderRow"><div class="loader-dots"><span></span><span></span><span></span></div> <span id="loaderLabel">generating</span></div>
 </main>
 
-<p class="footer-note">Every pitch here is generated on the fly from a large combinatorial word-bank — none of it describes a real company, and none of it is investment advice. The Search / News / Trends links on each card aren't sources for that exact pitch (it doesn't exist anywhere) — they're live queries built from its real ingredients, so you can see what's actually happening in that space. Refresh, or hit shuffle, for an entirely new run.</p>
+<p class="footer-note" id="footerNote">Every pitch here is generated on the fly from a large combinatorial word-bank — none of it describes a real company, and none of it is investment advice. The Search / News / Trends links on each card aren't sources for that exact pitch (it doesn't exist anywhere) — they're live queries built from its real ingredients, so you can see what's actually happening in that space. Refresh, or hit shuffle, for an entirely new run.</p>
+
+<button class="back-to-top" id="backToTop" aria-label="Back to top" title="Back to top">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 19V5M5 12l7-7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<div class="toast" id="toast"></div>
 
 <script>
 (() => {
   "use strict";
 
-  /* ---------------- word banks ---------------- */
+  /* ---------------- word banks (bilingual) ----------------
+     Every slot is generated from a fixed, known vocabulary, so every word
+     that can ever appear has a real, human-checked Russian translation --
+     not a live machine translation of arbitrary combined sentences (which
+     would risk broken grammar at combinatorial scale). VERTICALS also
+     carries a category used for both accent coloring and the filter bar. */
+  const CATS = {
+    climate:  { en:"Climate & Physical World", ru:"Климат и физический мир" },
+    care:     { en:"Health & Care",            ru:"Здоровье и забота" },
+    money:    { en:"Money & Trust",            ru:"Деньги и доверие" },
+    tech:     { en:"Technology & Infra",       ru:"Технологии и инфраструктура" },
+    commerce: { en:"Commerce & Community",     ru:"Коммерция и сообщества" },
+  };
   const VERTICALS = [
-    "elder-care coordination","AI-assisted agriculture","climate-risk insurance","creator-economy tooling",
-    "workplace mental wellness","urban micro-farming","circular fashion resale","longevity diagnostics",
-    "orbital logistics","embedded fintech infrastructure","supply-chain traceability","personalized education",
-    "synthetic biology","small-business cybersecurity","decentralized identity","developer productivity",
-    "last-mile delivery","boutique hospitality tech","legal-process automation","parametric insurance",
-    "renter-focused proptech","precision agtech","grid-scale battery storage","ocean-plastic recovery",
-    "quantum-safe encryption","warehouse robotics","freelancer retirement planning","accessibility-first design",
-    "adaptive language learning","senior mobility devices","micro-mobility fleets","sustainable packaging",
-    "alternative protein","podcast monetization","no-code automation","remote-team culture",
-    "HR compliance software","marketing attribution","voice commerce","home energy management",
-    "pet health monitoring","disaster-response logistics","community solar","digital estate planning",
-    "gig-worker benefits","independent-restaurant operations","water-quality monitoring","marine biotech",
+    {en:"elder-care coordination", ru:"координация ухода за пожилыми", cat:"care"},
+    {en:"AI-assisted agriculture", ru:"сельское хозяйство с ИИ", cat:"climate"},
+    {en:"climate-risk insurance", ru:"страхование климатических рисков", cat:"climate"},
+    {en:"creator-economy tooling", ru:"инструменты для авторской экономики", cat:"commerce"},
+    {en:"workplace mental wellness", ru:"ментальное здоровье на работе", cat:"care"},
+    {en:"urban micro-farming", ru:"городское микрофермерство", cat:"climate"},
+    {en:"circular fashion resale", ru:"циклическая перепродажа одежды", cat:"commerce"},
+    {en:"longevity diagnostics", ru:"диагностика долголетия", cat:"care"},
+    {en:"orbital logistics", ru:"орбитальная логистика", cat:"climate"},
+    {en:"embedded fintech infrastructure", ru:"встроенная финтех-инфраструктура", cat:"money"},
+    {en:"supply-chain traceability", ru:"прослеживаемость цепочек поставок", cat:"commerce"},
+    {en:"personalized education", ru:"персонализированное образование", cat:"commerce"},
+    {en:"synthetic biology", ru:"синтетическая биология", cat:"tech"},
+    {en:"small-business cybersecurity", ru:"кибербезопасность малого бизнеса", cat:"tech"},
+    {en:"decentralized identity", ru:"децентрализованная идентификация", cat:"tech"},
+    {en:"developer productivity", ru:"продуктивность разработчиков", cat:"tech"},
+    {en:"last-mile delivery", ru:"доставка последней мили", cat:"commerce"},
+    {en:"boutique hospitality tech", ru:"технологии для бутик-отелей", cat:"commerce"},
+    {en:"legal-process automation", ru:"автоматизация юридических процессов", cat:"money"},
+    {en:"parametric insurance", ru:"параметрическое страхование", cat:"money"},
+    {en:"renter-focused proptech", ru:"проптех для арендаторов", cat:"commerce"},
+    {en:"precision agtech", ru:"точные агротехнологии", cat:"climate"},
+    {en:"grid-scale battery storage", ru:"накопители энергии для энергосетей", cat:"climate"},
+    {en:"ocean-plastic recovery", ru:"сбор пластика из океана", cat:"climate"},
+    {en:"quantum-safe encryption", ru:"квантовоустойчивое шифрование", cat:"tech"},
+    {en:"warehouse robotics", ru:"складская робототехника", cat:"tech"},
+    {en:"freelancer retirement planning", ru:"пенсионное планирование для фрилансеров", cat:"money"},
+    {en:"accessibility-first design", ru:"дизайн с приоритетом доступности", cat:"care"},
+    {en:"adaptive language learning", ru:"адаптивное изучение языков", cat:"care"},
+    {en:"senior mobility devices", ru:"устройства мобильности для пожилых", cat:"care"},
+    {en:"micro-mobility fleets", ru:"флоты микромобильности", cat:"commerce"},
+    {en:"sustainable packaging", ru:"экологичная упаковка", cat:"climate"},
+    {en:"alternative protein", ru:"альтернативный белок", cat:"climate"},
+    {en:"podcast monetization", ru:"монетизация подкастов", cat:"commerce"},
+    {en:"no-code automation", ru:"no-code автоматизация", cat:"tech"},
+    {en:"remote-team culture", ru:"культура удалённых команд", cat:"commerce"},
+    {en:"HR compliance software", ru:"ПО для HR-комплаенса", cat:"money"},
+    {en:"marketing attribution", ru:"атрибуция в маркетинге", cat:"tech"},
+    {en:"voice commerce", ru:"голосовая коммерция", cat:"tech"},
+    {en:"home energy management", ru:"управление энергией дома", cat:"climate"},
+    {en:"pet health monitoring", ru:"мониторинг здоровья питомцев", cat:"care"},
+    {en:"disaster-response logistics", ru:"логистика при чрезвычайных ситуациях", cat:"care"},
+    {en:"community solar", ru:"общественная солнечная энергетика", cat:"climate"},
+    {en:"digital estate planning", ru:"цифровое наследственное планирование", cat:"money"},
+    {en:"gig-worker benefits", ru:"льготы для гиг-работников", cat:"commerce"},
+    {en:"independent-restaurant operations", ru:"работа независимых ресторанов", cat:"commerce"},
+    {en:"water-quality monitoring", ru:"мониторинг качества воды", cat:"climate"},
+    {en:"marine biotech", ru:"морская биотехнология", cat:"climate"},
   ];
   const MODELS = [
-    "subscription box","B2B SaaS platform","two-sided marketplace","API-as-a-service",
-    "franchise network","direct-to-consumer brand","freemium platform with a premium tier","usage-based pricing model",
-    "licensing partnership","on-demand service platform","community-led membership","hardware-plus-software bundle",
-    "data-as-a-service offering","white-label platform","cooperative-ownership model","embedded finance layer",
-    "outcome-based pricing model","managed-service offering","curated marketplace","peer-to-peer rental network",
-    "vertical roll-up","affiliate-powered content platform","enterprise licensing suite","hybrid retail-and-digital brand","pay-what-you-can membership",
+    {en:"subscription box", ru:"подписочная коробка"},
+    {en:"B2B SaaS platform", ru:"B2B SaaS-платформа"},
+    {en:"two-sided marketplace", ru:"двусторонний маркетплейс"},
+    {en:"API-as-a-service", ru:"API как сервис"},
+    {en:"franchise network", ru:"франчайзинговая сеть"},
+    {en:"direct-to-consumer brand", ru:"D2C-бренд"},
+    {en:"freemium platform with a premium tier", ru:"freemium-платформа с премиум-тарифом"},
+    {en:"usage-based pricing model", ru:"тарификация по факту использования"},
+    {en:"licensing partnership", ru:"лицензионное партнёрство"},
+    {en:"on-demand service platform", ru:"сервис по требованию"},
+    {en:"community-led membership", ru:"сообщество на членской основе"},
+    {en:"hardware-plus-software bundle", ru:"связка «железо плюс софт»"},
+    {en:"data-as-a-service offering", ru:"данные как сервис"},
+    {en:"white-label platform", ru:"white-label платформа"},
+    {en:"cooperative-ownership model", ru:"кооперативная модель владения"},
+    {en:"embedded finance layer", ru:"встроенный финансовый слой"},
+    {en:"outcome-based pricing model", ru:"оплата по результату"},
+    {en:"managed-service offering", ru:"управляемый сервис"},
+    {en:"curated marketplace", ru:"курируемый маркетплейс"},
+    {en:"peer-to-peer rental network", ru:"пиринговая сеть аренды"},
+    {en:"vertical roll-up", ru:"вертикальный роллап"},
+    {en:"affiliate-powered content platform", ru:"контент-платформа на партнёрках"},
+    {en:"enterprise licensing suite", ru:"корпоративный лицензионный пакет"},
+    {en:"hybrid retail-and-digital brand", ru:"гибридный бренд «розница плюс диджитал»"},
+    {en:"pay-what-you-can membership", ru:"членство «плати сколько можешь»"},
   ];
   const HOOKS = [
-    "AI-powered matching","blockchain-verified provenance","a hyperlocal fulfillment network","gamified habit-building",
-    "peer-to-peer lending","predictive analytics","a circular refurbished-supply loop","algorithmic curation",
-    "on-demand micro-fulfillment","community-vetted quality control","white-glove concierge service","embedded payments",
-    "voice-first interaction","augmented-reality preview","autonomous routing","real-time carbon accounting",
-    "computer-vision inspection","a dynamic pricing engine","decentralized governance","biometric personalization",
-    "satellite-derived insights","edge-computed sensors","behavioral-science nudges","an open API ecosystem",
-    "synthetic data generation","federated learning","digital-twin simulation","generative design tools",
-    "zero-knowledge verification","ambient sensing",
+    {en:"AI-powered matching", ru:"подбор на основе ИИ"},
+    {en:"blockchain-verified provenance", ru:"происхождение, подтверждённое блокчейном"},
+    {en:"a hyperlocal fulfillment network", ru:"гиперлокальная сеть доставки"},
+    {en:"gamified habit-building", ru:"геймификация формирования привычек"},
+    {en:"peer-to-peer lending", ru:"peer-to-peer кредитование"},
+    {en:"predictive analytics", ru:"предиктивная аналитика"},
+    {en:"a circular refurbished-supply loop", ru:"циклическая схема восстановленных товаров"},
+    {en:"algorithmic curation", ru:"алгоритмическая кураторская подборка"},
+    {en:"on-demand micro-fulfillment", ru:"микровыполнение заказов по запросу"},
+    {en:"community-vetted quality control", ru:"контроль качества силами сообщества"},
+    {en:"white-glove concierge service", ru:"консьерж-сервис высшего уровня"},
+    {en:"embedded payments", ru:"встроенные платежи"},
+    {en:"voice-first interaction", ru:"голосовое взаимодействие как основа"},
+    {en:"augmented-reality preview", ru:"предпросмотр в дополненной реальности"},
+    {en:"autonomous routing", ru:"автономная маршрутизация"},
+    {en:"real-time carbon accounting", ru:"учёт углеродного следа в реальном времени"},
+    {en:"computer-vision inspection", ru:"инспекция машинным зрением"},
+    {en:"a dynamic pricing engine", ru:"движок динамического ценообразования"},
+    {en:"decentralized governance", ru:"децентрализованное управление"},
+    {en:"biometric personalization", ru:"биометрическая персонализация"},
+    {en:"satellite-derived insights", ru:"аналитика на основе спутниковых данных"},
+    {en:"edge-computed sensors", ru:"датчики с граничными вычислениями"},
+    {en:"behavioral-science nudges", ru:"подталкивания на основе поведенческой науки"},
+    {en:"an open API ecosystem", ru:"открытая экосистема API"},
+    {en:"synthetic data generation", ru:"генерация синтетических данных"},
+    {en:"federated learning", ru:"федеративное обучение"},
+    {en:"digital-twin simulation", ru:"симуляция цифрового двойника"},
+    {en:"generative design tools", ru:"инструменты генеративного дизайна"},
+    {en:"zero-knowledge verification", ru:"верификация с нулевым разглашением"},
+    {en:"ambient sensing", ru:"фоновое считывание данных"},
   ];
   const AUDIENCES = [
-    "Gen Z creators","remote-first teams","aging-in-place seniors","first-time homebuyers",
-    "independent restaurant owners","solo founders","rural communities","urban commuters",
-    "small manufacturers","freelance professionals","new parents","college students",
-    "nonprofit organizations","local governments","healthcare providers","gig workers",
-    "immigrant entrepreneurs","family caregivers","boutique hotel operators","independent musicians",
-    "small-scale farmers","apartment renters","midsize logistics firms","community health workers",
-    "early-stage startups",
+    {en:"Gen Z creators", ru:"креаторы поколения Z"},
+    {en:"remote-first teams", ru:"команды с удалённым форматом по умолчанию"},
+    {en:"aging-in-place seniors", ru:"пожилые люди, живущие дома"},
+    {en:"first-time homebuyers", ru:"покупатели первого жилья"},
+    {en:"independent restaurant owners", ru:"владельцы независимых ресторанов"},
+    {en:"solo founders", ru:"фаундеры-одиночки"},
+    {en:"rural communities", ru:"сельские сообщества"},
+    {en:"urban commuters", ru:"городские пассажиры"},
+    {en:"small manufacturers", ru:"небольшие производители"},
+    {en:"freelance professionals", ru:"фрилансеры-профессионалы"},
+    {en:"new parents", ru:"молодые родители"},
+    {en:"college students", ru:"студенты вузов"},
+    {en:"nonprofit organizations", ru:"некоммерческие организации"},
+    {en:"local governments", ru:"местные органы власти"},
+    {en:"healthcare providers", ru:"медицинские учреждения"},
+    {en:"gig workers", ru:"гиг-работники"},
+    {en:"immigrant entrepreneurs", ru:"предприниматели-иммигранты"},
+    {en:"family caregivers", ru:"семейные сиделки"},
+    {en:"boutique hotel operators", ru:"владельцы бутик-отелей"},
+    {en:"independent musicians", ru:"независимые музыканты"},
+    {en:"small-scale farmers", ru:"мелкие фермеры"},
+    {en:"apartment renters", ru:"арендаторы квартир"},
+    {en:"midsize logistics firms", ru:"логистические компании среднего размера"},
+    {en:"community health workers", ru:"работники здравоохранения на местах"},
+    {en:"early-stage startups", ru:"стартапы на ранней стадии"},
   ];
   const DIFFS = [
-    "built on real-time data","engineered for trust from day one","designed to scale quietly","backed by a vetted network",
-    "compliant before regulators ask","priced for radical accessibility","powered by machine learning under the hood","grounded in community ownership",
-    "obsessed with response time","quietly profitable by month one","built by people who lived the problem","designed for the next regulatory wave",
-    "stress-tested for edge cases","unreasonably easy to onboard","built to work offline first","engineered for the last mile",
-    "designed around trust signals","built for the messy middle","quietly defensible","engineered to disappear into the background",
+    {en:"built on real-time data", ru:"построено на данных в реальном времени"},
+    {en:"engineered for trust from day one", ru:"создано для доверия с первого дня"},
+    {en:"designed to scale quietly", ru:"спроектировано для тихого масштабирования"},
+    {en:"backed by a vetted network", ru:"опирается на проверенную сеть партнёров"},
+    {en:"compliant before regulators ask", ru:"соответствует требованиям на опережение регуляторов"},
+    {en:"priced for radical accessibility", ru:"цена — для максимальной доступности"},
+    {en:"powered by machine learning under the hood", ru:"под капотом — машинное обучение"},
+    {en:"grounded in community ownership", ru:"основано на владении сообществом"},
+    {en:"obsessed with response time", ru:"одержимо скоростью отклика"},
+    {en:"quietly profitable by month one", ru:"тихо прибыльно уже с первого месяца"},
+    {en:"built by people who lived the problem", ru:"создано людьми, которые сами прошли через эту проблему"},
+    {en:"designed for the next regulatory wave", ru:"спроектировано на опережение будущих норм"},
+    {en:"stress-tested for edge cases", ru:"проверено на крайних случаях"},
+    {en:"unreasonably easy to onboard", ru:"невероятно простой старт для пользователя"},
+    {en:"built to work offline first", ru:"работает офлайн по умолчанию"},
+    {en:"engineered for the last mile", ru:"создано для последней мили"},
+    {en:"designed around trust signals", ru:"выстроено вокруг сигналов доверия"},
+    {en:"built for the messy middle", ru:"создано для «грязной середины» процесса"},
+    {en:"quietly defensible", ru:"тихо, но надёжно защищено от копирования"},
+    {en:"engineered to disappear into the background", ru:"создано, чтобы стать незаметным"},
   ];
   const PAINS = [
-    "manual spreadsheets and phone calls","fragmented vendor relationships","opaque pricing","slow onboarding",
-    "compliance busywork","one-size-fits-all software","unreliable data","endless email threads",
-    "legacy systems that don't talk to each other","high customer-acquisition costs","trust gaps between buyers and sellers",
-    "seasonal cash-flow crunches","a shortage of skilled labor","regulatory uncertainty","supply-chain blind spots",
+    {en:"manual spreadsheets and phone calls", ru:"ручные таблицы и звонки"},
+    {en:"fragmented vendor relationships", ru:"разрозненные отношения с поставщиками"},
+    {en:"opaque pricing", ru:"непрозрачное ценообразование"},
+    {en:"slow onboarding", ru:"медленный онбординг"},
+    {en:"compliance busywork", ru:"рутина комплаенса"},
+    {en:"one-size-fits-all software", ru:"универсальный софт на все случаи"},
+    {en:"unreliable data", ru:"ненадёжные данные"},
+    {en:"endless email threads", ru:"бесконечные цепочки писем"},
+    {en:"legacy systems that don't talk to each other", ru:"устаревшие системы, которые не связаны друг с другом"},
+    {en:"high customer-acquisition costs", ru:"высокая стоимость привлечения клиента"},
+    {en:"trust gaps between buyers and sellers", ru:"дефицит доверия между покупателями и продавцами"},
+    {en:"seasonal cash-flow crunches", ru:"сезонные провалы в денежном потоке"},
+    {en:"a shortage of skilled labor", ru:"нехватка квалифицированных кадров"},
+    {en:"regulatory uncertainty", ru:"регуляторная неопределённость"},
+    {en:"supply-chain blind spots", ru:"слепые зоны в цепочке поставок"},
   ];
+  // Names are treated as brand names, not translated -- same convention as
+  // a real bilingual pitch deck, where "Meridian Labs" stays "Meridian Labs"
+  // in Russian copy too.
   const NAME_ROOTS = [
     "Verdant","Nomad","Anchor","Kindred","Loop","Pulse","Foundry","Harbor","Meridian","Fathom",
     "Ember","Thread","Lattice","Compass","Drift","Basin","Summit","Tandem","Current","Grove",
@@ -379,10 +636,10 @@ a{ color:var(--amber-bright); }
     " Point"," Stack"," & Co."," Group"," Studio",
   ];
 
-  // MODELS is the only slot templates prepend a hardcoded article to, so
-  // it's the only one that needs real a/an agreement. Letter-based vowel
-  // checks get this wrong both ways ("a usage-based..." starts with a
-  // consonant Y-sound despite the vowel letter; "an on-demand..." starts
+  // MODELS is the only slot English templates prepend a hardcoded article
+  // to, so it's the only one that needs real a/an agreement. Letter-based
+  // vowel checks get this wrong both ways ("a usage-based..." starts with
+  // a consonant Y-sound despite the vowel letter; "an on-demand..." starts
   // with a real vowel sound) -- with a wordlist this small, a plain
   // exception set is more reliable than a phonetic heuristic.
   const AN_EXCEPTIONS = new Set([
@@ -391,24 +648,57 @@ a{ color:var(--amber-bright); }
   ]);
   function art(word){ return AN_EXCEPTIONS.has(word) ? "an" : "a"; }
 
-  const TAGLINE_TEMPLATES = [
-    (n,mo,ho,au,di,ve) => `${n} is ${art(mo)} ${mo} bringing ${ho} to ${ve} — built for ${au}.`,
-    (n,mo,ho,au,di,ve) => `${n} helps ${au} navigate ${ve} through ${art(mo)} ${mo} powered by ${ho}.`,
-    (n,mo,ho,au,di,ve) => `${n} is the ${mo} for ${ve}, <b>${di}</b>.`,
-    (n,mo,ho,au,di,ve) => `${cap(au)} use ${n}, ${art(mo)} ${mo} that applies ${ho} to ${ve}.`,
-    (n,mo,ho,au,di,ve) => `${n} pairs ${ho} with ${ve}, giving ${au} ${art(mo)} ${mo} that's <b>${di}</b>.`,
-    (n,mo,ho,au,di,ve) => `Think of ${n} as ${ve}, reimagined as ${art(mo)} ${mo} for ${au} — <b>${di}</b>.`,
-  ];
-  const DESC_TEMPLATES = [
-    (n,ho,ve,au,pa) => `Early traction comes from ${au} tired of ${pa}; ${n} replaces that with ${ho}.`,
-    (n,ho,ve,au,pa) => `The wedge is simple: ${ve} is broken for ${au} thanks to ${pa}, and ${ho} closes the gap fast.`,
-    (n,ho,ve,au,pa) => `${n} launches with a lean team, a waitlist of ${au}, and a thesis that ${ho} finally makes ${ve} tractable.`,
-    (n,ho,ve,au,pa) => `Expect a quiet launch, a founding cohort of ${au}, and a roadmap leaning hard on ${ho}.`,
-    (n,ho,ve,au,pa) => `The founders spent years inside ${ve} fighting ${pa}, and built ${n} around ${ho} to fix it.`,
-  ];
-
   function cap(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
   const ICON_EXTERNAL = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M7 17L17 7M8 7h9v9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+  // A "gloss" is any word-bank term rendered inline -- clickable to reveal
+  // the other language's version, so every generated word is individually
+  // point-and-translate-able, not just the whole card via the EN/RU toggle.
+  function gloss(item, cls){
+    const en = item.en.replace(/"/g, "&quot;");
+    const ru = item.ru.replace(/"/g, "&quot;");
+    return `<span class="gloss${cls ? " " + cls : ""}" data-en="${en}" data-ru="${ru}">${mode === "ru" ? item.ru : item.en}</span>`;
+  }
+
+  // Templates take the RAW {en,ru} objects (not pre-glossed strings) so
+  // English can still do real a/an agreement off the true English text
+  // (art() needs the plain word, not a wrapping <span>) while gloss() is
+  // called at the exact point of use.
+  const TAGLINE_TEMPLATES_EN = [
+    (n,mo,ho,au,di,ve) => `${n} is ${art(mo.en)} ${gloss(mo)} bringing ${gloss(ho)} to ${gloss(ve)} — built for ${gloss(au)}.`,
+    (n,mo,ho,au,di,ve) => `${n} helps ${gloss(au)} navigate ${gloss(ve)} through ${art(mo.en)} ${gloss(mo)} powered by ${gloss(ho)}.`,
+    (n,mo,ho,au,di,ve) => `${n} is the ${gloss(mo)} for ${gloss(ve)}, <b>${gloss(di)}</b>.`,
+    (n,mo,ho,au,di,ve) => `${cap(au.en)} use ${n}, ${art(mo.en)} ${gloss(mo)} that applies ${gloss(ho)} to ${gloss(ve)}.`,
+    (n,mo,ho,au,di,ve) => `${n} pairs ${gloss(ho)} with ${gloss(ve)}, giving ${gloss(au)} ${art(mo.en)} ${gloss(mo)} that's <b>${gloss(di)}</b>.`,
+    (n,mo,ho,au,di,ve) => `Think of ${n} as ${gloss(ve)}, reimagined as ${art(mo.en)} ${gloss(mo)} for ${gloss(au)} — <b>${gloss(di)}</b>.`,
+  ];
+  const DESC_TEMPLATES_EN = [
+    (n,ho,ve,au,pa,mo,di) => `Early traction comes from ${gloss(au)} tired of ${gloss(pa)}; ${n} replaces that with ${gloss(ho)}.`,
+    (n,ho,ve,au,pa,mo,di) => `The wedge is simple: ${gloss(ve)} is broken for ${gloss(au)} thanks to ${gloss(pa)}, and ${gloss(ho)} closes the gap fast.`,
+    (n,ho,ve,au,pa,mo,di) => `${n} launches with a lean team, a waitlist of ${gloss(au)}, and a thesis that ${gloss(ho)} finally makes ${gloss(ve)} tractable.`,
+    (n,ho,ve,au,pa,mo,di) => `Expect a quiet launch, a founding cohort of ${gloss(au)}, and a roadmap leaning hard on ${gloss(ho)}.`,
+    (n,ho,ve,au,pa,mo,di) => `The founders spent years inside ${gloss(ve)} fighting ${gloss(pa)}, and built ${n} around ${gloss(ho)} to fix it.`,
+  ];
+
+  // Russian sentence generation deliberately does NOT mirror the English
+  // prose templates. Slotting 48x25x30x25 noun phrases into free-flowing
+  // Russian prose would need correct case agreement (genitive after "для",
+  // instrumental after certain verbs, etc.) for every combination, which
+  // isn't something that can be verified at this scale -- so instead every
+  // Russian phrase is used only in its dictionary (nominative) form, inside
+  // a labeled/formula structure that never requires it to inflect. This is
+  // a real, common register in Russian pitch/business writing (label:
+  // value), not a simplification that reads as broken -- and it's
+  // guaranteed grammatically correct for any combination.
+  const TAGLINE_TEMPLATES_RU = [
+    (n,mo,ho,au,di,ve) => `${n} — «${gloss(ho)}» + «${gloss(ve)}» = ${gloss(mo)}.`,
+    (n,mo,ho,au,di,ve) => `${n}: ${gloss(mo)} на стыке «${gloss(ho)}» и «${gloss(ve)}».`,
+    (n,mo,ho,au,di,ve) => `${n} соединяет «${gloss(ho)}» и «${gloss(ve)}» в ${gloss(mo)}.`,
+  ];
+  const DESC_TEMPLATES_RU = [
+    (n,ho,ve,au,pa,mo,di) => `Проблема: «${gloss(pa)}» у аудитории «${gloss(au)}». Ответ: «${gloss(ho)}». Модель: ${gloss(mo)}. Отличие: ${gloss(di)}.`,
+    (n,ho,ve,au,pa,mo,di) => `Ниша «${gloss(ve)}» страдает от «${gloss(pa)}» — особенно для «${gloss(au)}». ${n} закрывает это через «${gloss(ho)}» (${gloss(mo)}, ${gloss(di)}).`,
+  ];
 
   /* ---------------- deterministic PRNG ---------------- */
   function mulberry32(seed){
@@ -421,11 +711,56 @@ a{ color:var(--amber-bright); }
   }
   function pick(rng, arr){ return arr[Math.floor(rng() * arr.length)]; }
 
-  let sessionSeed = (Date.now() ^ (Math.random() * 1e9)) >>> 0;
+  const STR = {
+    en: {
+      momentum:"Momentum", research:"Research", search:"Search", news:"News", trends:"Trends",
+      generated:"generated", allCats:"All",
+      eyebrow:"Live idea feed — never runs dry",
+      h1a:"Businesses that don't", h1b:"exist yet — ", h1em:"infinitely.",
+      lede:"Scroll and a new venture appears: a name, a pitch, a wedge. Every one machine-assembled from real startup mechanics, on the spot, forever.",
+      statIndustries:"Industries", statModels:"Business models", statPitches:"Possible pitches",
+      startBtn:"Start the feed", newUniverse:"New universe", scroll:"Scroll",
+      footer:"Every pitch here is generated on the fly from a large combinatorial word-bank — none of it describes a real company, and none of it is investment advice. The Search / News / Trends links on each card aren't sources for that exact pitch (it doesn't exist anywhere) — they're live queries built from its real ingredients, so you can see what's actually happening in that space. Click any underlined word to see it in the other language. Refresh, or hit shuffle, for an entirely new run.",
+      backToTop:"Back to top", filterLabel:"Industries", langLabel:"Language",
+      shareCopied:"Link copied",
+    },
+    ru: {
+      momentum:"Импульс", research:"Изучить", search:"Поиск", news:"Новости", trends:"Тренды",
+      generated:"сгенерировано", allCats:"Все",
+      eyebrow:"Живая лента идей — никогда не иссякает",
+      h1a:"Бизнесы, которых", h1b:"ещё нет — ", h1em:"бесконечно.",
+      lede:"Листай — и появляется новый стартап: имя, питч, стратегия входа. Каждый собран на лету из реальной механики стартапов — и так без конца.",
+      statIndustries:"Индустрий", statModels:"Бизнес-моделей", statPitches:"Возможных питчей",
+      startBtn:"Начать ленту", newUniverse:"Новая вселенная", scroll:"Листай",
+      footer:"Каждый питч здесь генерируется на лету из большого комбинаторного словаря — ни один не описывает реальную компанию, и ничего из этого не является инвестиционным советом. Ссылки Поиск / Новости / Тренды на каждой карточке — не источники именно этого питча (он нигде не существует), а живые запросы по его реальным составляющим, чтобы вы увидели, что происходит в этой нише на самом деле. Нажмите на любое подчёркнутое слово, чтобы увидеть его на другом языке. Обновите страницу или нажмите «перемешать» для совершенно нового набора.",
+      backToTop:"Наверх", filterLabel:"Индустрии", langLabel:"Язык",
+      shareCopied:"Ссылка скопирована",
+    },
+  };
 
+  function readSeedFromURL(){
+    const m = location.hash.match(/seed=(\d+)/);
+    return m ? (Number(m[1]) >>> 0) : null;
+  }
+  function syncSeedToURL(){
+    history.replaceState(null, "", "#seed=" + sessionSeed);
+  }
+
+  let sessionSeed = readSeedFromURL();
+  if(sessionSeed === null){ sessionSeed = (Date.now() ^ (Math.random() * 1e9)) >>> 0; }
+  syncSeedToURL();
+  let mode = "en"; // "en" | "ru" -- current display language for the whole feed
+  let activeCats = new Set(Object.keys(CATS)); // category filter: everything on by default
+
+  // Structured data only -- no rendered strings. Keeping the raw {en,ru}
+  // objects (plus the raw float that picks a sentence template) means the
+  // exact same card can be re-rendered in either language later, on demand,
+  // when the user flips the EN/RU toggle -- without re-drawing any random
+  // numbers, so the *content* of a card never changes, only its language.
   function generateCard(index){
     const rng = mulberry32((index * 2654435761 + sessionSeed) >>> 0);
-    const ve = pick(rng, VERTICALS);
+    const pool = VERTICALS.filter(v => activeCats.has(v.cat));
+    const ve = pick(rng, pool.length ? pool : VERTICALS);
     const mo = pick(rng, MODELS);
     const ho = pick(rng, HOOKS);
     const au = pick(rng, AUDIENCES);
@@ -433,8 +768,8 @@ a{ color:var(--amber-bright); }
     const pa = pick(rng, PAINS);
     const hasSuffix = rng() < 0.72;
     const name = pick(rng, NAME_ROOTS) + (hasSuffix ? pick(rng, NAME_SUFFIXES) : "");
-    const tagline = pick(rng, TAGLINE_TEMPLATES)(name, mo, ho, au, di, ve);
-    const desc = pick(rng, DESC_TEMPLATES)(name, ho, ve, au, pa);
+    const taglineT = rng();
+    const descT = rng();
     const momentum = 18 + Math.floor(rng() * 78);
     const dealId = "IDEA-" + String(100000 + ((index * 7919 + sessionSeed) % 899999)).padStart(6,"0");
     // Research links: this pitch itself is a synthetic combination that
@@ -443,14 +778,25 @@ a{ color:var(--amber-bright); }
     // built from its real ingredients (vertical + hook), so clicking
     // through shows genuine, current results for that space -- not a
     // fabricated citation pretending to be where this exact idea came from.
-    const researchQuery = `${ve} ${ho}`;
+    const researchQuery = `${ve.en} ${ho.en}`;
     const q = encodeURIComponent(researchQuery);
     const research = {
       search: `https://www.google.com/search?q=${q}+startup`,
       news:   `https://news.google.com/search?q=${q}`,
-      trends: `https://trends.google.com/trends/explore?q=${encodeURIComponent(ve)}`,
+      trends: `https://trends.google.com/trends/explore?q=${encodeURIComponent(ve.en)}`,
     };
-    return { dealId, name, tagline, desc, ve, mo, momentum, research };
+    return { dealId, index, name, ve, mo, ho, au, di, pa, taglineT, descT, momentum, research };
+  }
+
+  function taglineHTML(c){
+    const templates = mode === "ru" ? TAGLINE_TEMPLATES_RU : TAGLINE_TEMPLATES_EN;
+    const t = templates[Math.floor(c.taglineT * templates.length)];
+    return t(c.name, c.mo, c.ho, c.au, c.di, c.ve);
+  }
+  function descHTML(c){
+    const templates = mode === "ru" ? DESC_TEMPLATES_RU : DESC_TEMPLATES_EN;
+    const t = templates[Math.floor(c.descT * templates.length)];
+    return t(c.name, c.ho, c.ve, c.au, c.pa, c.mo, c.di);
   }
 
   /* ---------------- rendering ---------------- */
@@ -467,27 +813,9 @@ a{ color:var(--amber-bright); }
       const c = generateCard(nextIndex);
       const card = document.createElement("div");
       card.className = "card";
+      card.dataset.index = String(nextIndex);
       card.style.animationDelay = (i*0.045) + "s";
-      card.innerHTML = `
-        <div class="card-top"><span class="card-id">${c.dealId}</span><span>#${nextIndex}</span></div>
-        <h3 class="card-name">${c.name}</h3>
-        <p class="card-tagline">${c.tagline}</p>
-        <p class="card-desc">${c.desc}</p>
-        <div class="chips">
-          <span class="chip v">${c.ve}</span>
-          <span class="chip m">${c.mo}</span>
-        </div>
-        <div class="card-foot">
-          <span class="momentum-label">Momentum</span>
-          <div class="momentum-track"><div class="momentum-fill" data-fill="${c.momentum}"></div></div>
-          <span class="momentum-pct">${c.momentum}%</span>
-        </div>
-        <div class="research-row">
-          <span class="research-label">Research</span>
-          <a class="research-link" href="${c.research.search}" target="_blank" rel="noopener">${ICON_EXTERNAL} Search</a>
-          <a class="research-link" href="${c.research.news}" target="_blank" rel="noopener">${ICON_EXTERNAL} News</a>
-          <a class="research-link" href="${c.research.trends}" target="_blank" rel="noopener">${ICON_EXTERNAL} Trends</a>
-        </div>`;
+      card.innerHTML = cardInnerHTML(c);
       frag.appendChild(card);
       nextIndex++; totalRendered++;
     }
@@ -505,11 +833,53 @@ a{ color:var(--amber-bright); }
     }));
   }
 
+  function cardInnerHTML(c){
+    const UI = STR[mode];
+    return `
+        <div class="card-top"><span class="card-id">${c.dealId}</span><span>#${c.index}</span></div>
+        <h3 class="card-name">${c.name}</h3>
+        <p class="card-tagline">${taglineHTML(c)}</p>
+        <p class="card-desc">${descHTML(c)}</p>
+        <div class="chips">
+          <span class="chip v cat-${c.ve.cat}">${gloss(c.ve)}</span>
+          <span class="chip m">${gloss(c.mo)}</span>
+        </div>
+        <div class="card-foot">
+          <span class="momentum-label">${UI.momentum}</span>
+          <div class="momentum-track"><div class="momentum-fill" data-fill="${c.momentum}"></div></div>
+          <span class="momentum-pct">${c.momentum}%</span>
+        </div>
+        <div class="research-row">
+          <span class="research-label">${UI.research}</span>
+          <a class="research-link" href="${c.research.search}" target="_blank" rel="noopener">${ICON_EXTERNAL} ${UI.search}</a>
+          <a class="research-link" href="${c.research.news}" target="_blank" rel="noopener">${ICON_EXTERNAL} ${UI.news}</a>
+          <a class="research-link" href="${c.research.trends}" target="_blank" rel="noopener">${ICON_EXTERNAL} ${UI.trends}</a>
+        </div>`;
+  }
+
   function resetFeed(){
     feedEl.innerHTML = "";
     nextIndex = 1; totalRendered = 0;
     liveCountEl.textContent = "0";
     renderBatch();
+  }
+
+  // Switching EN<->RU (or toggling a filter, which changes the pool a card
+  // was even eligible to be drawn from) re-derives every already-rendered
+  // card from its own index -- generateCard() is a pure function of
+  // (index, sessionSeed, activeCats), so this reproduces the exact same
+  // random draws and just changes which language/labels wrap them, with
+  // no need to have kept the original objects sitting in memory or in the DOM.
+  function rerenderAllCards(){
+    feedEl.querySelectorAll(".card").forEach(card => {
+      const idx = Number(card.dataset.index);
+      const c = generateCard(idx);
+      card.innerHTML = cardInnerHTML(c);
+    });
+    document.querySelectorAll(".momentum-fill").forEach(el => {
+      el.style.width = el.dataset.fill + "%";
+      el.setAttribute("data-filled", "");
+    });
   }
 
   renderBatch();
@@ -521,6 +891,7 @@ a{ color:var(--amber-bright); }
 
   function shuffleUniverse(btn){
     sessionSeed = (Date.now() ^ (Math.random() * 1e9)) >>> 0;
+    syncSeedToURL();
     resetFeed();
     if(btn){ btn.classList.add("spin"); setTimeout(()=>btn.classList.remove("spin"), 500); }
     window.scrollTo({ top: document.querySelector(".controls").getBoundingClientRect().bottom + window.scrollY, behavior:"smooth" });
@@ -529,6 +900,118 @@ a{ color:var(--amber-bright); }
   document.getElementById("shuffleBtn2").addEventListener("click", ()=>shuffleUniverse(null));
   document.getElementById("startBtn").addEventListener("click", () => {
     document.querySelector(".feed-wrap").scrollIntoView({ behavior:"smooth", block:"start" });
+  });
+
+  /* ---------------- language toggle ---------------- */
+  function applyStaticStrings(){
+    const UI = STR[mode];
+    document.getElementById("generatedLabel").textContent = UI.generated;
+    document.getElementById("heroEyebrow").textContent = UI.eyebrow;
+    document.getElementById("heroH1").innerHTML = `${UI.h1a}<br/>${UI.h1b}<em>${UI.h1em}</em>`;
+    document.getElementById("heroLede").textContent = UI.lede;
+    document.getElementById("statIndustriesLbl").textContent = UI.statIndustries;
+    document.getElementById("statModelsLbl").textContent = UI.statModels;
+    document.getElementById("statPitchesLbl").textContent = UI.statPitches;
+    document.getElementById("startBtn").textContent = UI.startBtn;
+    document.getElementById("shuffleBtn2").textContent = UI.newUniverse;
+    document.getElementById("scrollLabel").textContent = UI.scroll;
+    document.getElementById("loaderLabel").textContent = mode === "ru" ? "генерация" : "generating";
+    document.getElementById("footerNote").textContent = UI.footer;
+    document.getElementById("backToTop").title = UI.backToTop;
+    document.getElementById("filterToggleBtn").title = UI.filterLabel;
+    document.getElementById("langToggle").setAttribute("aria-label", UI.langLabel);
+  }
+  document.querySelectorAll(".lang-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const lang = btn.dataset.lang;
+      if(lang === mode) return;
+      mode = lang;
+      document.body.classList.toggle("mode-ru", mode === "ru");
+      document.querySelectorAll(".lang-btn").forEach(b => b.classList.toggle("active", b.dataset.lang === mode));
+      applyStaticStrings();
+      buildFilterBar();
+      rerenderAllCards();
+    });
+  });
+
+  /* ---------------- category filter bar ---------------- */
+  // "All" categories active simultaneously is the unfiltered state -- shown
+  // as ONLY the "All" chip lit up, not all five category chips at once
+  // (that would look selected-but-mean-nothing). The first click on any
+  // single category ISOLATES to just that one, matching how filter chips
+  // like this actually get used ("show me just climate ideas"), not a
+  // literal checkbox-style exclude-what-you-click-off toggle. Once
+  // narrowed, further clicks add/remove categories from the working set,
+  // and clicking the last remaining one back off returns to "All".
+  function buildFilterBar(){
+    const bar = document.getElementById("filterBar");
+    const UI = STR[mode];
+    const isUnfiltered = activeCats.size === Object.keys(CATS).length;
+    let html = `<button class="filter-chip${isUnfiltered ? " active" : ""}" data-cat="__all__" style="--chip-color:var(--paper);--chip-wash:var(--ink-raised)">${UI.allCats}</button>`;
+    for(const key of Object.keys(CATS)){
+      const on = !isUnfiltered && activeCats.has(key);
+      html += `<button class="filter-chip${on ? " active" : ""}" data-cat="${key}" style="--chip-color:var(--cat-${key});--chip-wash:var(--cat-${key}-wash)"><span class="dot" style="background:var(--cat-${key})"></span>${CATS[key][mode]}</button>`;
+    }
+    bar.innerHTML = html;
+    bar.querySelectorAll(".filter-chip").forEach(chip => {
+      chip.addEventListener("click", () => {
+        const cat = chip.dataset.cat;
+        const wasUnfiltered = activeCats.size === Object.keys(CATS).length;
+        if(cat === "__all__"){
+          activeCats = new Set(Object.keys(CATS));
+        } else if(wasUnfiltered){
+          activeCats = new Set([cat]);
+        } else if(activeCats.has(cat)){
+          activeCats.delete(cat);
+          if(activeCats.size === 0) activeCats = new Set(Object.keys(CATS));
+        } else {
+          activeCats.add(cat);
+        }
+        buildFilterBar();
+        resetFeed();
+      });
+    });
+  }
+  buildFilterBar();
+  applyStaticStrings();
+  document.getElementById("filterToggleBtn").addEventListener("click", (e) => {
+    const bar = document.getElementById("filterBar");
+    const nowHidden = bar.classList.toggle("hidden");
+    e.currentTarget.setAttribute("aria-expanded", String(!nowHidden));
+  });
+
+  /* ---------------- point-and-translate glosses (delegated) ---------------- */
+  document.addEventListener("click", (e) => {
+    const g = e.target.closest && e.target.closest(".gloss");
+    document.querySelectorAll(".gloss.open").forEach(el => { if(el !== g) el.classList.remove("open"); });
+    if(g) g.classList.toggle("open");
+  });
+
+  /* ---------------- share link ---------------- */
+  function showToast(msg){
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.add("visible");
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => t.classList.remove("visible"), 2200);
+  }
+  document.getElementById("shareBtn").addEventListener("click", async () => {
+    syncSeedToURL();
+    try {
+      await navigator.clipboard.writeText(location.href);
+      showToast(STR[mode].shareCopied);
+    } catch(err){
+      showToast(location.href);
+    }
+  });
+
+  /* ---------------- back to top ---------------- */
+  const backToTopBtn = document.getElementById("backToTop");
+  window.addEventListener("scroll", () => {
+    backToTopBtn.classList.toggle("visible", window.scrollY > window.innerHeight);
+  }, { passive: true });
+  backToTopBtn.addEventListener("click", () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
   });
 
   /* ---------------- ambient hero canvas ---------------- */
