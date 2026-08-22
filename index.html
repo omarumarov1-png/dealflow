@@ -199,6 +199,24 @@ a{ color:var(--amber-bright); }
 @media (prefers-reduced-motion: reduce){ .momentum-fill{ transition:none; } }
 .momentum-pct{ font-family:var(--font-mono); font-size:11.5px; color:var(--paper-dim); font-variant-numeric:tabular-nums; flex-shrink:0; width:34px; text-align:right; }
 
+.research-row{
+  display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  margin-top:16px; padding-top:16px; border-top:1px solid var(--hairline);
+}
+.research-label{
+  font-family:var(--font-mono); font-size:10.5px; letter-spacing:0.08em; text-transform:uppercase;
+  color:var(--paper-faint); margin-right:2px;
+}
+.research-link{
+  display:inline-flex; align-items:center; gap:5px;
+  font-family:var(--font-body); font-weight:600; font-size:12px;
+  color:var(--paper-dim); text-decoration:none;
+  padding:6px 12px; border-radius:99px; border:1px solid var(--hairline-bright);
+  transition:border-color 0.2s cubic-bezier(0.16,1,0.3,1), color 0.2s cubic-bezier(0.16,1,0.3,1);
+}
+.research-link:hover{ border-color:var(--amber); color:var(--amber-bright); }
+.research-link svg{ flex-shrink:0; opacity:0.7; }
+
 .loader-row{
   display:flex; align-items:center; justify-content:center; gap:10px;
   padding:36px 0; color:var(--paper-faint); font-family:var(--font-mono); font-size:12px; letter-spacing:0.08em; text-transform:uppercase;
@@ -289,7 +307,7 @@ a{ color:var(--amber-bright); }
   <div class="loader-row" id="loaderRow"><div class="loader-dots"><span></span><span></span><span></span></div> generating</div>
 </main>
 
-<p class="footer-note">Every pitch here is generated on the fly from a large combinatorial word-bank — none of it describes a real company, and none of it is investment advice. Refresh, or hit shuffle, for an entirely new run.</p>
+<p class="footer-note">Every pitch here is generated on the fly from a large combinatorial word-bank — none of it describes a real company, and none of it is investment advice. The Search / News / Trends links on each card aren't sources for that exact pitch (it doesn't exist anywhere) — they're live queries built from its real ingredients, so you can see what's actually happening in that space. Refresh, or hit shuffle, for an entirely new run.</p>
 
 <script>
 (() => {
@@ -390,6 +408,7 @@ a{ color:var(--amber-bright); }
   ];
 
   function cap(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+  const ICON_EXTERNAL = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M7 17L17 7M8 7h9v9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
   /* ---------------- deterministic PRNG ---------------- */
   function mulberry32(seed){
@@ -418,7 +437,20 @@ a{ color:var(--amber-bright); }
     const desc = pick(rng, DESC_TEMPLATES)(name, ho, ve, au, pa);
     const momentum = 18 + Math.floor(rng() * 78);
     const dealId = "IDEA-" + String(100000 + ((index * 7919 + sessionSeed) % 899999)).padStart(6,"0");
-    return { dealId, name, tagline, desc, ve, mo, momentum };
+    // Research links: this pitch itself is a synthetic combination that
+    // doesn't exist anywhere, so there's no real "source" to link to for
+    // it specifically. What's honest and actually useful is a live search
+    // built from its real ingredients (vertical + hook), so clicking
+    // through shows genuine, current results for that space -- not a
+    // fabricated citation pretending to be where this exact idea came from.
+    const researchQuery = `${ve} ${ho}`;
+    const q = encodeURIComponent(researchQuery);
+    const research = {
+      search: `https://www.google.com/search?q=${q}+startup`,
+      news:   `https://news.google.com/search?q=${q}`,
+      trends: `https://trends.google.com/trends/explore?q=${encodeURIComponent(ve)}`,
+    };
+    return { dealId, name, tagline, desc, ve, mo, momentum, research };
   }
 
   /* ---------------- rendering ---------------- */
@@ -449,6 +481,12 @@ a{ color:var(--amber-bright); }
           <span class="momentum-label">Momentum</span>
           <div class="momentum-track"><div class="momentum-fill" data-fill="${c.momentum}"></div></div>
           <span class="momentum-pct">${c.momentum}%</span>
+        </div>
+        <div class="research-row">
+          <span class="research-label">Research</span>
+          <a class="research-link" href="${c.research.search}" target="_blank" rel="noopener">${ICON_EXTERNAL} Search</a>
+          <a class="research-link" href="${c.research.news}" target="_blank" rel="noopener">${ICON_EXTERNAL} News</a>
+          <a class="research-link" href="${c.research.trends}" target="_blank" rel="noopener">${ICON_EXTERNAL} Trends</a>
         </div>`;
       frag.appendChild(card);
       nextIndex++; totalRendered++;
